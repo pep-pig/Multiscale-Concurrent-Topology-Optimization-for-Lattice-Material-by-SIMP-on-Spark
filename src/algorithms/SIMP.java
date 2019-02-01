@@ -6,6 +6,10 @@ import org.jblas.MatrixFunctions;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 public class SIMP {
     /*
@@ -30,7 +34,7 @@ public class SIMP {
         fem.setMacroMeshModel(fem.length,fem.height, fem.nelx, fem.nely);
         fem.setMicroMeshModel(fem.cellModel.length, fem.cellModel.height, fem.cellModel.nelx, fem.cellModel.nely);
         //step2 generate material model
-        fem.initialMicroMaterialModel(fem.cellModel.lambda, fem.cellModel.mu,1,fem.cellModel.penal);
+        fem.initialMicroMaterialModel(fem.cellModel.lambda, fem.cellModel.mu,fem.volf,fem.cellModel.penal);
         fem.initialMacroMaterialModel(fem.penal);
         //step3 update macroDensity
         double macroChange = 1.0;
@@ -38,6 +42,9 @@ public class SIMP {
         double force = fem.force;
         int iteration=0;
         DoubleMatrix oldMacroDensity;
+
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(fem.cpu+1,fem.cpu+1,200,TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(fem.nelx*fem.nely));
+        long start = System.currentTimeMillis();
         while (macroChange > macroStopCondition && iteration<fem.macroStopIteration) {
             fem.microEnergy = new ArrayList[fem.nelx*fem.nely];
             fem.microVolume = new ArrayList[fem.nelx*fem.nely];
@@ -79,91 +86,39 @@ public class SIMP {
             System.out.println("macroIteration:"+iteration+"start;  macroEnergy:"+macroEnergy+";  volumeFactor:"+volumeFactor);
             macroChange = MatrixFunctions.abs(fem.macroDensity.sub(oldMacroDensity)).max();
             //step4 update microDensity for each cell
-            if(iteration>30){
+            if(iteration>fem.microOptimizationStartIteration){
                 fem.reInitMicroDensity();
                 for (int ele=0;ele<fem.nelx*fem.nely;ele++){
                     macroEle = ele;
                     //System.out.println("  microCell"+ele+" start");
-                    microSimp(ele,fem,macroU);
-                    //System.out.println("  microCell"+ele+" finished");
+                    MicroOptimize microOptimize = new MicroOptimize(ele,fem,macroU);
+                    executor.submit(microOptimize);
                 }
-                fem.updateMacroMaterialModel();
+                while(true){
+                    if(MicroOptimize.num == fem.nelx*fem.nely){
+                        MicroOptimize.num=0;
+                        break;
+                    }
+                    else {
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
             postProcess.plotGrayscale(postProcess.plotWindow,fem.macroDensity.mmul(-1).add(1).toArray2());
             postProcess.plotRealStructure(postProcess.resultWindow,fem.microDensity,fem.nely);
             System.out.println("macroIteration finished;  updating macro material properties by homogenize");
         }
         computeFinished = true;
+        long end = System.currentTimeMillis();
+        System.out.println("time elapsed:"+(end-start));
+        executor.shutdown();
         return fem;
     }
-    /*
-    microSimp : use SIMP to update microDensity in a cell
-     */
-    public void microSimp(int macroEle,FiniteElementAnalysis fem,DoubleMatrix macroU) {
-        double microChange = 1.0;
-        DoubleMatrix oldMicroDensity;
-        int iteration = 0;
-        fem.microEnergy[macroEle] = new ArrayList<Double>();
-        fem.microVolume[macroEle] = new ArrayList<Double>();
-        while (microChange >fem.microStopChangeValue && iteration<fem.microStopIteration) {
-            iteration++;
-            oldMicroDensity = fem.microDensity.get(macroEle);
-            //step1 compute fem element stiffness K
-            DoubleMatrix K = fem.assemblyMicroElementStiffnessMatrix(fem.microDensity.get(macroEle), fem.cellModel.penal, fem.cellModel.nodeNumberMatrix);
-            //step2 add boundary conditions,there is only displacement constrain,which is contained in macroU
-            //Map<String, DoubleMatrix> boundaryConditions = fem.microLinearIntepolatingBoundary(macroEle,macroU);
-            Map<String, DoubleMatrix> boundaryConditions = fem.microBoundary(macroEle,macroU);
-            Map<String, DoubleMatrix> linearSystem = fem.implementBoundaryConditions(K, boundaryConditions.get("loadConstrains"), boundaryConditions.get("displacementConstrains"));
-            //step3 solve micro linearSystem
-            DoubleMatrix microU = fem.solve(linearSystem.get("K"), linearSystem.get("F"));
-            //step4 update micro microDensity by simp
-            double microEnergy = 0;
-            DoubleMatrix microEnergyDerivative = new DoubleMatrix(fem.cellModel.nely, fem.cellModel.nelx);
-            for (int microEle = 0; microEle < fem.cellModel.nelx * fem.cellModel.nely; microEle++) {
-                microEnergy += fem.getMicroElementEnergy(microEle,macroEle, microU);
-                microEnergyDerivative = microEnergyDerivative.put(microEle, fem.getMicroElementEnergyDerivative(microEle,macroEle, microU));
-            }
-            fem.microEnergy[macroEle].add(microEnergy);
-            microEnergyDerivative = microFilter(macroEle,fem,microEnergyDerivative);
-            //TODO 每一次微观迭代尝试重新初始化密度
-            fem.microDensity.set(macroEle,OC.oc(fem.cellModel.nelx,fem.cellModel.nely,fem.microDensity.get(macroEle),fem.macroDensity.get(macroEle),microEnergyDerivative,fem.microOcMove,fem.microOcDensityUpperLimit,fem.microOcDensityLowerLimit));
-            double volumeFactor = fem.microDensity.get(macroEle).sum()/(fem.cellModel.nelx*fem.cellModel.nely);
-            fem.microVolume[macroEle].add(volumeFactor);
-            //System.out.println("    microIteration:"+iteration+";  microEnergy:"+microEnergy+";  volumeFactor:"+volumeFactor);
-            microChange = MatrixFunctions.abs(fem.microDensity.get(macroEle).sub(oldMicroDensity)).max();
-            //microDataReadable = 1;
-        }
-    }
 
-    /*
-    microFilter:to avoid checkboard
-     */
-    public DoubleMatrix microFilter(int macroEle,FiniteElementAnalysis fem, DoubleMatrix energyDerivative){
-        DoubleMatrix modifiedEnergyDerivative = new DoubleMatrix(fem.cellModel.nely,fem.cellModel.nelx);
-        double eleLength = fem.cellModel.length/fem.cellModel.nelx;
-        double[][] dist = new double[][]{{eleLength*Math.sqrt(2),eleLength,eleLength*Math.sqrt(2)},
-                                           {eleLength,0,eleLength},
-                                            {eleLength*Math.sqrt(2),eleLength,eleLength*Math.sqrt(2)},
-        };
-
-        for(int i=0;i<fem.cellModel.nelx;i++){
-            for(int j=0;j<fem.cellModel.nely;j++){
-                double modifiedDemoninator = 0;
-                double modifiedNumerator = 0;
-                for(int m=i-1, k=0;m<=i+1;m++,k++){
-                    for(int n=j-1,l=0;n<=j+1;n++,l++ ){
-                        if (m<0 || n<0 || m>=fem.cellModel.nelx || n>=fem.cellModel.nely){
-                            continue;
-                        }
-                        modifiedDemoninator += (fem.cellModel.filterRadius-dist[l][k])*(fem.microDensity.get(macroEle).get(n,m))*(energyDerivative.get(n,m));
-                        modifiedNumerator+=fem.cellModel.filterRadius-dist[l][k];
-                    }
-                }
-                modifiedEnergyDerivative.put(j,i,modifiedDemoninator/(modifiedNumerator*fem.microDensity.get(macroEle).get(j,i)));
-            }
-        }
-        return modifiedEnergyDerivative;
-    }
     public DoubleMatrix macroFilter(FiniteElementAnalysis fem, DoubleMatrix energyDerivative){
         DoubleMatrix modifiedEnergyDerivative = new DoubleMatrix(fem.nely,fem.nelx);
         double eleLength = fem.length/fem.nelx;

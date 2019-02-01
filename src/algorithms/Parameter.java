@@ -86,6 +86,8 @@ public class Parameter {
                             fem.penal = Double.parseDouble(value);
                         }else if(key.equals("filterRadius")){
                             fem.filterRadius = Double.parseDouble(value)*fem.length/fem.nelx;
+                        }else if(key.equals("microOptimizationStartIteration")){
+                            fem.microOptimizationStartIteration = Integer.parseInt(value);
                         }
                     }
                 }
@@ -135,6 +137,17 @@ public class Parameter {
                         }
                         else if(key.equals("densityLowerLimit")){
                             fem.microOcDensityLowerLimit = Double.parseDouble(value);
+                        }
+                    }
+                }
+                if (type.equals("parallelComputeSettings")){
+                    NodeList childList = parameter.getChildNodes();
+                    for (int j = 1; j < childList.getLength(); j+=2){
+                        Node node = childList.item(j);
+                        String key = node.getNodeName();
+                        String value = node.getFirstChild().getTextContent();
+                        if(key.equals("cpu")){
+                            fem.cpu = Integer.parseInt(value);
                         }
                     }
                 }

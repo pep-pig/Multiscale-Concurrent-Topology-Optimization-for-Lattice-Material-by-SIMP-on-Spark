@@ -24,6 +24,7 @@
         <volf>0.5</volf>
         <stopChangeValue>0.0001</stopChangeValue>
         <stopIteration>40</stopIteration>
+        <microOptimizationStartIteration>0</microOptimizationStartIteration>
     </parameter>
 
     <parameter name = "microSimpParameter">
@@ -43,6 +44,10 @@
         <move>0.1</move>
         <densityUpperLimit>1.0</densityUpperLimit>
         <densityLowerLimit>0.001</densityLowerLimit>
+    </parameter>
+
+    <parameter name = "parallelComputeSettings">
+        <cpu>4</cpu>
     </parameter>
 </multiscaleOptimization>
 
