@@ -30,7 +30,7 @@ public class SIMP {
         fem.setMacroMeshModel(fem.length,fem.height, fem.nelx, fem.nely);
         fem.setMicroMeshModel(fem.cellModel.length, fem.cellModel.height, fem.cellModel.nelx, fem.cellModel.nely);
         //step2 generate material model
-        fem.initialMicroMaterialModel(fem.cellModel.lambda, fem.cellModel.mu,1,fem.cellModel.penal);
+        fem.initialMicroMaterialModel(fem.cellModel.lambda, fem.cellModel.mu,fem.volf,fem.cellModel.penal);
         fem.initialMacroMaterialModel(fem.penal);
         //step3 update macroDensity
         double macroChange = 1.0;
