@@ -52,7 +52,7 @@ public class FiniteElementAnalysis {
     int macroStopIteration;
     double microStopChangeValue;
     int microStopIteration;
-
+    int microOptimizationStartIteration;
     //Oc parameter
     double macroOcMove;
     double macroOcDensityUpperLimit;
@@ -61,6 +61,8 @@ public class FiniteElementAnalysis {
     double microOcDensityUpperLimit;
     double microOcDensityLowerLimit;
 
+    //Paraller compute settings
+    int cpu;
     public FiniteElementAnalysis(){
             }
 
@@ -124,7 +126,6 @@ public class FiniteElementAnalysis {
             C.add(Homogenization.homogenize(elx,ely,microDensity.get(i).mul(cellModel.lambda),microDensity.get(i).mul(cellModel.mu)));
         }
     }
-
     public void updateMacroMaterialModel(){
         double elx = cellModel.length/cellModel.nelx;
         double ely = cellModel.height/cellModel.nely;
