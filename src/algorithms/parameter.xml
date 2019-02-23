@@ -47,7 +47,7 @@
     </parameter>
 
     <parameter name = "parallelComputeSettings">
-        <cpu>4</cpu>
+        <cpu>12</cpu>
     </parameter>
 </multiscaleOptimization>
 

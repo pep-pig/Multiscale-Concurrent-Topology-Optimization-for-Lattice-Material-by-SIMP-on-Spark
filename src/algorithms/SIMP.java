@@ -1,7 +1,10 @@
 package algorithms;
 
+import com.aparapi.Kernel;
+import com.aparapi.Range;
 import org.jblas.DoubleMatrix;
 import org.jblas.MatrixFunctions;
+
 
 
 import java.util.ArrayList;
@@ -66,7 +69,7 @@ public class SIMP {
 
             Map<String, DoubleMatrix> linearSystem = fem.implementBoundaryConditions(K, boundaryConditions.get("loadConstrains"), boundaryConditions.get("displacementConstrains"));
             //step3.3 solve fem linearSystem
-            DoubleMatrix macroU = fem.solve(linearSystem.get("K"), linearSystem.get("F"));
+            final DoubleMatrix macroU = fem.solve(linearSystem.get("K"), linearSystem.get("F"));
             fem.macroU = macroU;
             //step3.4 update fem microDensity by simp
             double macroEnergy = 0;
@@ -86,27 +89,18 @@ public class SIMP {
             System.out.println("macroIteration:"+iteration+"start;  macroEnergy:"+macroEnergy+";  volumeFactor:"+volumeFactor);
             macroChange = MatrixFunctions.abs(fem.macroDensity.sub(oldMacroDensity)).max();
             //step4 update microDensity for each cell
-            if(iteration>fem.microOptimizationStartIteration){
+            if(iteration>fem.microOptimizationStartIteration) {
                 fem.reInitMicroDensity();
-                for (int ele=0;ele<fem.nelx*fem.nely;ele++){
-                    macroEle = ele;
-                    //System.out.println("  microCell"+ele+" start");
-                    MicroOptimize microOptimize = new MicroOptimize(ele,fem,macroU);
-                    executor.submit(microOptimize);
-                }
-                while(true){
-                    if(MicroOptimize.num == fem.nelx*fem.nely){
-                        MicroOptimize.num=0;
-                        break;
+                Kernel kernel = new Kernel() {
+                    @Override
+                    public void run() {
+                        int ele = getGlobalId();
+                        MicroOptimize microOptimize = new MicroOptimize(ele, fem, macroU);
+                        microOptimize.start();
                     }
-                    else {
-                        try {
-                            Thread.sleep(3000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
+                };
+                Range range = Range.create(fem.nelx * fem.nely);
+                kernel.execute(range);
             }
             postProcess.plotGrayscale(postProcess.plotWindow,fem.macroDensity.mmul(-1).add(1).toArray2());
             postProcess.plotRealStructure(postProcess.resultWindow,fem.microDensity,fem.nely);

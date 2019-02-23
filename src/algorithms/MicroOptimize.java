@@ -8,18 +8,17 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class MicroOptimize implements Runnable {
+public class MicroOptimize  {
     public static int num = 0;
     public int  macroEle;
     public FiniteElementAnalysis fem;
     public DoubleMatrix macroU;
-    private Lock lock = new ReentrantLock();
     public MicroOptimize(int macroEle, FiniteElementAnalysis fem, DoubleMatrix macroU){
         this.macroEle = macroEle;
         this.fem = fem;
         this.macroU = macroU;
     }
-    public void run() {
+    public void start() {
         double microChange = 1.0;
         DoubleMatrix oldMicroDensity;
         int iteration = 0;
@@ -55,9 +54,6 @@ public class MicroOptimize implements Runnable {
         double elx = fem.cellModel.length/fem.cellModel.nelx;
         double ely = fem.cellModel.height/fem.cellModel.nely;
         fem.C.set(macroEle,Homogenization.homogenize(elx,ely,fem.microDensity.get(macroEle).mul(fem.cellModel.lambda),fem.microDensity.get(macroEle).mul(fem.cellModel.mu)));
-        lock.lock();
-            num++;
-        lock.unlock();
     }
     /*
     microFilter:to avoid checkboard
