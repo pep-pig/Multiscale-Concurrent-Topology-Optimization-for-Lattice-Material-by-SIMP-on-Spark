@@ -2,11 +2,11 @@ package algorithms;
 
 public class Main {
     public static void main(String[] args) {
-        final SIMP simpOptimizer = new SIMP();
+        final Optimizer multiscaleOptimizer = new Optimizer();
         final PostProcess postProcess = new PostProcess();
         Thread computeThread = new Thread(new Runnable() {
             public void run() {
-                FiniteElementAnalysis result = simpOptimizer.macroSimp(postProcess);
+                multiscaleOptimizer.compute(postProcess);
             }
         });
         computeThread.start();
@@ -18,3 +18,4 @@ public class Main {
         });
     }
 }
+

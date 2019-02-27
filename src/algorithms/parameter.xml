@@ -23,8 +23,8 @@
         <filterRadius>1.5</filterRadius>
         <volf>0.5</volf>
         <stopChangeValue>0.0001</stopChangeValue>
-        <stopIteration>40</stopIteration>
-        <microOptimizationStartIteration>0</microOptimizationStartIteration>
+        <stopIteration>15</stopIteration>
+        <microOptimizationStartIteration>10</microOptimizationStartIteration>
     </parameter>
 
     <parameter name = "microSimpParameter">
@@ -46,8 +46,8 @@
         <densityLowerLimit>0.001</densityLowerLimit>
     </parameter>
 
-    <parameter name = "parallelComputeSettings">
-        <cpu>12</cpu>
+    <parameter name = "cpuCores">
+        <cpu>10</cpu>
     </parameter>
 </multiscaleOptimization>
 

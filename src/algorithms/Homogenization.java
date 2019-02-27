@@ -20,8 +20,6 @@ public class Homogenization {
      * @param ly Unit cell length in y-direction
      * @param lambda Lame's first parameter for both materials. Two entries.
      * @param mu Lame's second parameter for both material. Two entries.
-     * @param phi Angle between horizontal and vertical cell wall. Degrees.
-     * @param x Material indicator matrix. Size used to determine number of elements in x and y direction
      */
     public static DoubleMatrix homogenize(double lx,double ly,DoubleMatrix lambda,DoubleMatrix mu){
         /*step1:

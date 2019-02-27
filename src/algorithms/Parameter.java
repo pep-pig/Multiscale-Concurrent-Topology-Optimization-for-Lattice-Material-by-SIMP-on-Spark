@@ -19,7 +19,10 @@ public class Parameter {
             //create DocumentBuilder instance
             DocumentBuilder db = dbf.newDocumentBuilder();
             //load parameter.xml file to current project directory by parser method of  DocumentBuilder
-            Document document = db.parse("src/algorithms/parameter.xml");
+            System.out.println("初始化宏观参数");
+            //System.out.println(fem.getClass().getResource("parameter.xml"));
+            Document document = db.parse(fem.getClass().getResourceAsStream("parameter.xml"));
+            System.out.println("初始化宏观参数成功");
             //obtain all nodes of which tag name is parameter
             NodeList parameterList = document.getElementsByTagName("parameter");
             for (int i = 0; i < parameterList.getLength(); i++) {
@@ -140,7 +143,7 @@ public class Parameter {
                         }
                     }
                 }
-                if (type.equals("parallelComputeSettings")){
+                if (type.equals("cpuCores")){
                     NodeList childList = parameter.getChildNodes();
                     for (int j = 1; j < childList.getLength(); j+=2){
                         Node node = childList.item(j);
@@ -151,6 +154,7 @@ public class Parameter {
                         }
                     }
                 }
+
             }
 
         } catch (ParserConfigurationException e) {
@@ -160,7 +164,8 @@ public class Parameter {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        fem.setMacroMeshModel();
+        fem.setMicroMeshModel();
 
     }
-    public void show(){}
 }
