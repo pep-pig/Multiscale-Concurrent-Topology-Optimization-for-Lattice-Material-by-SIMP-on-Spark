@@ -83,14 +83,17 @@ public class SIMP {
             //don't need to avoid the check board.
             //TODO we can also try to add filter in fem ,and to explore the difference .
             macroEnergyDerivative = macroFilter(fem,macroEnergyDerivative);
-            fem.macroDensity = OC.oc(fem.nelx,fem.nely,fem.macroDensity,fem.volf,macroEnergyDerivative,fem.macroOcMove,fem.macroOcDensityUpperLimit,fem.macroOcDensityLowerLimit);
+
+            fem.macroDensity = OC.oc(fem.nelx,fem.nely,fem.macroDensity,fem.volf,macroEnergyDerivative,fem.macroOcMove,fem.macroOcDensityUpperLimit,fem.macroOcDensityLowerLimit,iteration);
             double volumeFactor = fem.macroDensity.sum()/(fem.nelx*fem.nely);
             fem.macroVolume.add(volumeFactor);
             System.out.println("macroIteration:"+iteration+"start;  macroEnergy:"+macroEnergy+";  volumeFactor:"+volumeFactor);
             macroChange = MatrixFunctions.abs(fem.macroDensity.sub(oldMacroDensity)).max();
             //step4 update microDensity for each cell
             if(iteration>fem.microOptimizationStartIteration) {
-                fem.reInitMicroDensity();
+                if((iteration-fem.microOptimizationStartIteration)==1){
+                    fem.reInitMicroDensity();
+                }
                 Kernel kernel = new Kernel() {
                     @Override
                     public void run() {
