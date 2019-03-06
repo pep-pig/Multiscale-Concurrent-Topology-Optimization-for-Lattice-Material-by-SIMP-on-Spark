@@ -27,9 +27,9 @@ public class SIMP {
     public boolean computeFinished = false;
     public int macroEle;
     public FiniteElementAnalysis fem = new FiniteElementAnalysis();
-
-    public SIMP(){
-        Parameter.init(fem);
+    public String path;
+    public SIMP(String path){
+        Parameter.init(fem,path);
     }
 
     public  FiniteElementAnalysis macroSimp(PostProcess postProcess) {

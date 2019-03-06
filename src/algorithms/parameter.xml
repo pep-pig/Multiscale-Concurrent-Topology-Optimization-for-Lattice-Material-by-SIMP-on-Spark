@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding = "UTF-8" ?>
 <multiscaleOptimization>
     <parameter name = "macroMeshParameter">
-        <length>120</length>
+        <length>60</length>
         <height>24</height>
-        <nelx>120</nelx>
+        <nelx>60</nelx>
         <nely>24</nely>
         <force>-10</force>
         <boundaryCondition>3</boundaryCondition>
@@ -12,8 +12,8 @@
     <parameter name = "microMeshParameter">
         <length>1</length>
         <height>1</height>
-        <nelx>40</nelx>
-        <nely>40</nely>
+        <nelx>20</nelx>
+        <nely>20</nely>
         <lambda>0.33</lambda>
         <mu>0.3846</mu>
     </parameter>
@@ -23,8 +23,8 @@
         <filterRadius>1.5</filterRadius>
         <volf>0.5</volf>
         <stopChangeValue>0.0001</stopChangeValue>
-        <stopIteration>50</stopIteration>
-        <microOptimizationStartIteration>20</microOptimizationStartIteration>
+        <stopIteration>30</stopIteration>
+        <microOptimizationStartIteration>10</microOptimizationStartIteration>
     </parameter>
     <parameter name = "macroOcParameter">
         <move>0.2</move>

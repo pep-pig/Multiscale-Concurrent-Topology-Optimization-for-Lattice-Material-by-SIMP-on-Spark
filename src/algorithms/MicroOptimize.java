@@ -45,10 +45,6 @@ public class MicroOptimize  {
             //fem.microEnergy[macroEle].add(microEnergy);
             microEnergyDerivative = microFilter(macroEle,fem,microEnergyDerivative);
             //TODO 每一次微观迭代尝试重新初始化密度
-            if(macroEle==357){
-                System.out.println("debuging...");
-                //System.out.println(macroEle+"体积差值："+(volumeFactor-fem.macroDensity.get(macroEle)));
-            }
             fem.microDensity.set(macroEle,OC.oc(fem.cellModel.nelx,fem.cellModel.nely,fem.microDensity.get(macroEle),fem.macroDensity.get(macroEle),microEnergyDerivative,fem.microOcMove,fem.microOcDensityUpperLimit,fem.microOcDensityLowerLimit,iteration));
             double volumeFactor = fem.microDensity.get(macroEle).sum()/(fem.cellModel.nelx*fem.cellModel.nely);
             fem.microVolume[macroEle].add(volumeFactor-fem.macroDensity.get(macroEle));
