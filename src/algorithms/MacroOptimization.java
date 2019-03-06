@@ -34,9 +34,6 @@ public class MacroOptimization extends MacroFiniteElementAnalysis implements Pai
         DoubleMatrix macroDensity = macroInputRDD._2();
         ArrayList<DoubleMatrix> materialMatrixC = macroInputRDD._1();
         //reinitiate micro Density instead of using the result of last iteration
-        for(int ele = 0;ele<microDensity.size();ele++){
-            microDensity.set(ele,DoubleMatrix.ones(cellModel.nely,cellModel.nelx).mul(macroDensity.get(ele)));
-        }
         //1. compute fem element stiffness K
         DoubleMatrix K = assemblyMacroElementStiffnessMatrix(macroDensity,materialMatrixC);
         //2. add boundary conditions
@@ -60,7 +57,6 @@ public class MacroOptimization extends MacroFiniteElementAnalysis implements Pai
             macroEnergy += getMacroElementEnergy(eln, macroU,materialMatrixC,macroDensity);
             macroEnergyDerivative = macroEnergyDerivative.put(eln, getMacroElementEnergyDerivative(eln, macroU,materialMatrixC,macroDensity));
         }
-
         macroEnergyDerivative = macroFilter(macroEnergyDerivative,macroDensity);
         macroDensity = oc(macroEnergyDerivative,macroDensity);
         double volumeFactor = macroDensity.sum()/(nelx*nely);
@@ -98,7 +94,7 @@ public class MacroOptimization extends MacroFiniteElementAnalysis implements Pai
         double lMid;
         double volume = volf*nelx*nely;
         DoubleMatrix newDensity = new DoubleMatrix(density.getRows(),density.getColumns());
-        while(L2-L1>1E-4){
+        while(L2-L1>1E-6){
             lMid = 0.5*(L2+L1);
             newDensity =(density.add(macroOcMove).min(density.mul(sqrt(dc.mul(-1).div(lMid))))).min(macroOcDensityUpperLimit).max(density.sub(macroOcMove)).max(macroOcDensityLowerLimit);
             if(newDensity.sum()-volume>0){

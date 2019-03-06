@@ -32,7 +32,6 @@ public class MicroOptimization extends MicroFiniteElementAnalysis implements Pai
             oldMicroDensity = newDensity;
             //Step1 compute fem element stiffness K
             DoubleMatrix K = assemblyMicroElementStiffnessMatrix(newDensity);
-
             //step2 add boundary conditions,there is only displacement constrain,which is contained in macroU
             Map<String, DoubleMatrix> boundaryConditions = microBoundary(Ue);
             Map<String, DoubleMatrix> linearSystem = implementBoundaryConditions(K, boundaryConditions.get("loadConstrains"), boundaryConditions.get("displacementConstrains"));
@@ -51,14 +50,11 @@ public class MicroOptimization extends MicroFiniteElementAnalysis implements Pai
             //System.out.println("    microIteration:"+iteration+";  microEnergy:"+microEnergy+";  volumeFactor:"+volumeFactor);
             microChange = MatrixFunctions.abs(newDensity.sub(oldMicroDensity)).max();
         }
-
         double elx = cellModel.length/cellModel.nelx;
         double ely = cellModel.height/cellModel.nely;
-        DoubleMatrix materialMatrixC = Homogenization.homogenize(elx,ely,newDensity.mul(cellModel.lambda),newDensity.mul(cellModel.mu));
-
+        DoubleMatrix materialMatrixC = Homogenization.homogenize(elx,ely,newDensity.mul(cellModel.lambda),newDensity.mul(cellModel.mu)).div(volf);
         return new Tuple2<Integer, Tuple3<DoubleMatrix,Double,DoubleMatrix>>(eleNum,new Tuple3<DoubleMatrix, Double, DoubleMatrix>(materialMatrixC,volf,newDensity));
     }
-
     /*
    microFilter:to avoid checkboard
     */
@@ -94,7 +90,7 @@ public class MicroOptimization extends MicroFiniteElementAnalysis implements Pai
         double lMid;
         double volume = vol*cellModel.nelx*cellModel.nely;
         DoubleMatrix newDensity = new DoubleMatrix(density.getRows(),density.getColumns());
-        while(L2-L1>1E-4){
+        while(L2-L1>1E-6){
             lMid = 0.5*(L2+L1);
             newDensity =(density.add(microOcMove).min(density.mul(sqrt(dc.mul(-1).div(lMid))))).min(microOcDensityUpperLimit).max(density.sub(microOcMove)).max(microOcDensityLowerLimit);
             if(newDensity.sum()-volume>0){

@@ -245,9 +245,9 @@ public class PostProcess  {
                     BufferedImage bufImg = convertRGBImage(microDensity.get(k).mul(-1).add(1).mul(255).toIntArray2());
                     k++;
                     g.drawImage(bufImg,xStart,yStart,xInterval,yInterval,this);
-                    yStart = yStart+yInterval+1;
+                    yStart = yStart+yInterval;
                 }
-                xStart = xStart+yInterval+2;
+                xStart = xStart+yInterval;
                 yStart = plotPanel.getY()+60;
             }
         }
