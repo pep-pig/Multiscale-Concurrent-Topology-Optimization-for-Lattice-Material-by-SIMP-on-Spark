@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding = "UTF-8" ?>
 <multiscaleOptimization>
     <parameter name = "macroMeshParameter">
-        <length>20</length>
-        <height>4</height>
-        <nelx>20</nelx>
-        <nely>4</nely>
-        <force>-2</force>
+        <length>120</length>
+        <height>24</height>
+        <nelx>120</nelx>
+        <nely>24</nely>
+        <force>-10</force>
         <boundaryCondition>3</boundaryCondition>
     </parameter>
     <!--element in micro must be square,because the filter is adjust for square element at this time-->
@@ -19,15 +19,15 @@
     </parameter>
 
     <parameter name = "macroSimpParameter">
-        <penal>0.02</penal>
+        <penal>1</penal>
         <filterRadius>1.5</filterRadius>
         <volf>0.5</volf>
         <stopChangeValue>0.0001</stopChangeValue>
-        <stopIteration>200</stopIteration>
-        <microOptimizationStartIteration>10</microOptimizationStartIteration>
+        <stopIteration>50</stopIteration>
+        <microOptimizationStartIteration>20</microOptimizationStartIteration>
     </parameter>
     <parameter name = "macroOcParameter">
-        <move>0.05</move>
+        <move>0.2</move>
         <densityUpperLimit>1</densityUpperLimit>
         <densityLowerLimit>0.001</densityLowerLimit>
     </parameter>

@@ -45,7 +45,7 @@ public class FiniteElementAnalysis {
     ArrayList<Double> macroEnergy = new ArrayList<Double>();
     ArrayList<Double> [] microEnergy ;
     ArrayList<Double>macroVolume = new ArrayList<Double>();
-    ArrayList<Double> [] microVolume;
+    ArrayList<Double> [] microVolume ;
 
     //Simp parameter
     double macroStopChangeValue;
@@ -115,7 +115,7 @@ public class FiniteElementAnalysis {
     public void reInitMicroDensity(){
         for (int ele = 0;ele<nelx*nely;ele++){
             //microDensity.set(ele,DoubleMatrix.ones(cellModel.nely,cellModel.nelx).mul(macroDensity.get(ele)));
-            microDensity.set(ele,DoubleMatrix.ones(cellModel.nely,cellModel.nelx).mul(macroDensity.get(ele)));
+            microDensity.set(ele,DoubleMatrix.ones(cellModel.nely,cellModel.nelx).mul(Math.pow(macroDensity.get(ele),1)));
         }
     }
     public  void initialMacroMaterialModel(double penal) {

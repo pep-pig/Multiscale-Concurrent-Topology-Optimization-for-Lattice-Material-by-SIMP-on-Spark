@@ -22,8 +22,8 @@ public class MicroOptimize  {
         double microChange = 1.0;
         DoubleMatrix oldMicroDensity;
         int iteration = 0;
-        fem.microEnergy[macroEle] = new ArrayList<Double>();
-        fem.microVolume[macroEle] = new ArrayList<Double>();
+        //fem.microEnergy[macroEle] = new ArrayList<Double>();
+        //fem.microVolume[macroEle] = new ArrayList<Double>();
         while (microChange >fem.microStopChangeValue && iteration<fem.microStopIteration) {
             iteration++;
             oldMicroDensity = fem.microDensity.get(macroEle);
@@ -42,20 +42,23 @@ public class MicroOptimize  {
                 microEnergy += fem.getMicroElementEnergy(microEle,macroEle, microU);
                 microEnergyDerivative = microEnergyDerivative.put(microEle, fem.getMicroElementEnergyDerivative(microEle,macroEle, microU));
             }
-            fem.microEnergy[macroEle].add(microEnergy);
+            //fem.microEnergy[macroEle].add(microEnergy);
             microEnergyDerivative = microFilter(macroEle,fem,microEnergyDerivative);
             //TODO 每一次微观迭代尝试重新初始化密度
+            if(macroEle==357){
+                System.out.println("debuging...");
+                //System.out.println(macroEle+"体积差值："+(volumeFactor-fem.macroDensity.get(macroEle)));
+            }
             fem.microDensity.set(macroEle,OC.oc(fem.cellModel.nelx,fem.cellModel.nely,fem.microDensity.get(macroEle),fem.macroDensity.get(macroEle),microEnergyDerivative,fem.microOcMove,fem.microOcDensityUpperLimit,fem.microOcDensityLowerLimit,iteration));
             double volumeFactor = fem.microDensity.get(macroEle).sum()/(fem.cellModel.nelx*fem.cellModel.nely);
-            fem.microVolume[macroEle].add(volumeFactor);
-            //System.out.println("    microIteration:"+iteration+";  microEnergy:"+microEnergy+";  volumeFactor:"+volumeFactor);
+            fem.microVolume[macroEle].add(volumeFactor-fem.macroDensity.get(macroEle));
             microChange = MatrixFunctions.abs(fem.microDensity.get(macroEle).sub(oldMicroDensity)).max();
         }
         double elx = fem.cellModel.length/fem.cellModel.nelx;
         double ely = fem.cellModel.height/fem.cellModel.nely;
         //TODO modified the C
         fem.C.set(macroEle,Homogenization.homogenize(elx,ely,fem.microDensity.get(macroEle).mul(fem.cellModel.lambda),fem.microDensity.get(macroEle).mul(fem.cellModel.mu)).div(Math.pow(fem.macroDensity.get(macroEle),fem.penal)));
-        System.out.println("finished homogenization:"+macroEle);
+        //System.out.println("finished homogenization:"+macroEle);
     }
     /*
     microFilter:to avoid checkboard

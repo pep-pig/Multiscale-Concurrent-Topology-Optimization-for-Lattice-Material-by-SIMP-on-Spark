@@ -7,10 +7,10 @@ public class OC {
         double L2 = 1E5;
         double lMid;
         double volume = volumeFactor*nelx*nely;
-        move = Math.max(Math.pow(0.96,(double)iteration),0.001);
+        //move = Math.max(Math.pow(0.96,(double)iteration),0.001);
         //System.out.println("current iteration's move is "+ move);
         DoubleMatrix newDensity = new DoubleMatrix(density.getRows(),density.getColumns());
-        while(L2-L1>1E-4){
+        while(L2-L1>1E-6){
             lMid = 0.5*(L2+L1);
             //TODO move should be dynamicly tuned
             newDensity =(density.add(move).min(density.mul(sqrt(dc.mul(-1).div(lMid))))).min(upperLimit).max(density.sub(move)).max(lowerLimit);

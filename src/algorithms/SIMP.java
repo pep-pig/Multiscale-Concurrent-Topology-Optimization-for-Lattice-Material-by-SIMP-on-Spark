@@ -46,11 +46,14 @@ public class SIMP {
         int iteration=0;
         DoubleMatrix oldMacroDensity;
 
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(fem.cpu+1,fem.cpu+1,200,TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(fem.nelx*fem.nely));
+        //ThreadPoolExecutor executor = new ThreadPoolExecutor(fem.cpu+1,fem.cpu+1,200,TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(fem.nelx*fem.nely));
         long start = System.currentTimeMillis();
+        //fem.microEnergy = new ArrayList[fem.nelx*fem.nely];
+        fem.microVolume = new ArrayList[fem.nelx*fem.nely];
+        for(int i=0;i<fem.nelx*fem.nely;i++){
+            fem.microVolume[i]=new ArrayList<Double>();
+        }
         while (macroChange > macroStopCondition && iteration<fem.macroStopIteration) {
-            fem.microEnergy = new ArrayList[fem.nelx*fem.nely];
-            fem.microVolume = new ArrayList[fem.nelx*fem.nely];
             iteration++;
             oldMacroDensity = fem.macroDensity;
             //step3.1 compute fem element stiffness K
@@ -107,12 +110,12 @@ public class SIMP {
             }
             postProcess.plotGrayscale(postProcess.plotWindow,fem.macroDensity.mmul(-1).add(1).toArray2());
             postProcess.plotRealStructure(postProcess.resultWindow,fem.microDensity,fem.nely);
-            System.out.println("macroIteration finished;  updating macro material properties by homogenize");
+            //System.out.println("macroIteration finished;  updating macro material properties by homogenize");
         }
         computeFinished = true;
         long end = System.currentTimeMillis();
         System.out.println("time elapsed:"+(end-start));
-        executor.shutdown();
+        //executor.shutdown();
         return fem;
     }
 
