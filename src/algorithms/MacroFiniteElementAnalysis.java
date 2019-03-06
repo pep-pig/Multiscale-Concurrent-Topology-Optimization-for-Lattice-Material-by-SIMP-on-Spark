@@ -65,18 +65,16 @@ public class MacroFiniteElementAnalysis extends FiniteElementAnalysis  {
     public Map<String,DoubleMatrix> boundaryCondition3(){
         Map<String,DoubleMatrix> boundaryConditions = new HashMap<String,DoubleMatrix>();
         DoubleMatrix loadConstrains = new DoubleMatrix(1,2);
-        DoubleMatrix displacementConstrains = new DoubleMatrix(4,2);
+        DoubleMatrix displacementConstrains = new DoubleMatrix(3,2);
 
         displacementConstrains.put(0,0,(nely+1)*2-1);
         displacementConstrains.put(0,1,0);
         displacementConstrains.put(1,0,(nely+1)*2);
         displacementConstrains.put(1,1,0);
-        displacementConstrains.put(2,0,(nelx+1)*(nely+1)*2-1);
+        displacementConstrains.put(2,0,(nelx+1)*(nely+1)*2);
         displacementConstrains.put(2,1,0);
-        displacementConstrains.put(3,0,(nelx+1)*(nely+1)*2);
-        displacementConstrains.put(3,1,0);
 
-        loadConstrains.put(0,0,((nelx)/2-1)*(nely+1)*2+2);
+        loadConstrains.put(0,0,((nelx)/2)*(nely+1)*2+2);
         loadConstrains.put(0,1,force);
         boundaryConditions.put("loadConstrains",loadConstrains);
         boundaryConditions.put("displacementConstrains",displacementConstrains);

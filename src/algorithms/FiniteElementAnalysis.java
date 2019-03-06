@@ -100,7 +100,6 @@ public  class FiniteElementAnalysis {
             for(int i = 0;i<loadConstrains.getRows();i++){
                 int index = (int)loadConstrains.get(i,0)-1;
                 double value = loadConstrains.get(i,1);
-                System.out.println(K.data);
                 F = F.put(index,value);
             }}
         linearSystem.put("F",F);
@@ -152,12 +151,11 @@ public  class FiniteElementAnalysis {
         for (int ele = 0;ele<nelx*nely;ele++){
             microDensity.add(DoubleMatrix.ones(cellModel.nely,cellModel.nelx).mul(volf));
         }
-        DoubleMatrix ce = Homogenization.homogenize(elx,ely,microDensity.get(0).mul(cellModel.lambda),microDensity.get(0).mul(cellModel.mu));
+        //TODO
+        DoubleMatrix ce = Homogenization.homogenize(elx,ely,microDensity.get(0).mul(cellModel.lambda),microDensity.get(0).mul(cellModel.mu)).div(Math.pow(macroDensity.get(0),penal));
         for(int i = 0; i < nely*nelx; i++) {
-            //TODO 检查此处是浅拷贝还是深度拷贝
             materialMatrixC.add(new DoubleMatrix(ce.toArray2()));
         }
-
         return new Tuple3<ArrayList<DoubleMatrix>, DoubleMatrix, ArrayList<DoubleMatrix>>(materialMatrixC,macroDensity,microDensity);
     }
 }

@@ -23,10 +23,7 @@ public class SingleMacroOptimization extends MacroFiniteElementAnalysis implemen
         ArrayList<DoubleMatrix> microDensity = macroInputRDD._3();
         DoubleMatrix macroDensity = macroInputRDD._2();
         ArrayList<DoubleMatrix> materialMatrixC = macroInputRDD._1();
-        //reinitiate micro Density instead of using the result of last iteration
-        for(int ele = 0;ele<microDensity.size();ele++){
-            microDensity.set(ele,DoubleMatrix.ones(cellModel.nely,cellModel.nelx).mul(macroDensity.get(ele)));
-        }
+
         //1. compute fem element stiffness K
         DoubleMatrix K = assemblyMacroElementStiffnessMatrix(macroDensity,materialMatrixC);
         //2. add boundary conditions
@@ -50,20 +47,11 @@ public class SingleMacroOptimization extends MacroFiniteElementAnalysis implemen
             macroEnergy += getMacroElementEnergy(eln, macroU,materialMatrixC,macroDensity);
             macroEnergyDerivative = macroEnergyDerivative.put(eln, getMacroElementEnergyDerivative(eln, macroU,materialMatrixC,macroDensity));
         }
-
         macroEnergyDerivative = macroFilter(macroEnergyDerivative,macroDensity);
         macroDensity = oc(macroEnergyDerivative,macroDensity);
         double volumeFactor = macroDensity.sum()/(nelx*nely);
-        double elx = cellModel.length/cellModel.nelx;
-        double ely = cellModel.height/cellModel.nely;
-        ArrayList<DoubleMatrix> C = new ArrayList<DoubleMatrix>();
-        DoubleMatrix ce = Homogenization.homogenize(elx,ely,microDensity.get(0).mul(cellModel.lambda),microDensity.get(0).mul(cellModel.mu));
-        for(int i = 0; i < nely*nelx; i++) {
-            //TODO 检查此处是浅拷贝还是深度拷贝
-            C.add(new DoubleMatrix(ce.toArray2()));
-        }
         System.out.println("MacroIteration:"+iteration+";  macroEnergy:"+macroEnergy+";  volumeFactor:"+volumeFactor);
-        return new Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>(C,macroDensity,microDensity);
+        return new Tuple3<>(materialMatrixC, macroDensity, microDensity);
     }
     public DoubleMatrix macroFilter(DoubleMatrix macroDc,DoubleMatrix macroDensity){
         DoubleMatrix modifiedEnergyDerivative = new DoubleMatrix(nely,nelx);

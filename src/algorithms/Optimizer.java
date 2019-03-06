@@ -2,18 +2,12 @@ package algorithms;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.PairFunction;
 import org.jblas.DoubleMatrix;
 import org.jblas.MatrixFunctions;
-import org.jcp.xml.dsig.internal.dom.DOMUtils;
-import org.omg.Messaging.SYNC_WITH_TRANSPORT;
-import scala.Int;
 import scala.Tuple2;
 import scala.Tuple3;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class Optimizer {
@@ -21,12 +15,17 @@ public class Optimizer {
     Optimizer(){
     }
     public void compute(PostProcess postProcess) {
-        SparkConf conf = new SparkConf().setAppName("MultiscaleOptimization").setMaster("local[4]");
+        SparkConf conf = new SparkConf().setAppName("MultiscaleOptimization").setMaster("local[28]");
 //        SparkConf conf = new SparkConf().setAppName("MultiscaleOptimization").setMaster("spark://master:7077").set("spark.driver.host","115.156.249.7")
 //                .setJars(new String[]{"H:\\OneDrive\\毕业论文\\multiscaleOptimization-Spark\\out\\artifacts\\multiscaleOptimization_jar\\multiscaleOptimization.jar"});
         JavaSparkContext jsc = new JavaSparkContext(conf);
+        jsc.setLogLevel("ERROR");
         FiniteElementAnalysis fem = new FiniteElementAnalysis();
-        //Parameter.init(fem);
+        SingleMacroOptimization singleMacroOptimization = new SingleMacroOptimization();
+        MacroOptimization macroOptimization = new MacroOptimization();
+        MicroOptimization microOptimization = new MicroOptimization();
+        MicroOutputRDDPartitioner microOutputRDDPartitioner = new MicroOutputRDDPartitioner(fem.cpu, fem.nelx * fem.nely);
+        //JavaPairRDD<Integer,Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>> initializedMacroInputRDD;
         long start = System.currentTimeMillis();
         fem.iteration = 0;
         double change = 1.0;
@@ -38,17 +37,23 @@ public class Optimizer {
         oldMacroDensity = inputData.get(0)._2._2();
         JavaPairRDD<Integer,Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>> macroInputRDD = jsc.parallelizePairs(inputData,1);
         while(fem.iteration<fem.macroStopIteration && change>fem.macroStopChangeValue){
+            //MacroOptimization Only
             if(fem.iteration<fem.microOptimizationStartIteration){
-                List<Tuple2<Integer,Tuple3<ArrayList<DoubleMatrix>, DoubleMatrix,ArrayList<DoubleMatrix>>>> nextInput = macroInputRDD.mapToPair(new SingleMacroOptimization()).collect();
+                List<Tuple2<Integer,Tuple3<ArrayList<DoubleMatrix>, DoubleMatrix,ArrayList<DoubleMatrix>>>> nextInput = macroInputRDD.mapToPair(singleMacroOptimization).collect();
                 postProcess.plotGrayscale(postProcess.plotWindow, nextInput.get(0)._2._2().mmul(-1).add(1).toArray2());
                 postProcess.plotRealStructure(postProcess.resultWindow, nextInput.get(0)._2._3(), fem.nely);
                 change = MatrixFunctions.abs(nextInput.get(0)._2._2().sub(oldMacroDensity).max());
                 macroInputRDD = jsc.parallelizePairs(nextInput);
                 fem.iteration++;
-            }else{
-                JavaPairRDD<Integer, Tuple3<DoubleMatrix, Double, DoubleMatrix>> microInputRDD = macroInputRDD.flatMapToPair(new MacroOptimization());
-                JavaPairRDD<Integer, Tuple3<DoubleMatrix, Double, DoubleMatrix>> parallelizedMicroInputRDD = microInputRDD.repartitionAndSortWithinPartitions(new microOutputRDDPartitioner(fem.cpu, fem.nelx * fem.nely));
-                JavaPairRDD<Integer, Tuple3<DoubleMatrix, Double, DoubleMatrix>> parallelizedMicroOutputRDD = parallelizedMicroInputRDD.mapToPair(new MicroOptimization());
+            }
+            //Concurrent Optimization
+            else{
+                if((fem.iteration-fem.microOptimizationStartIteration)==0){
+                    macroInputRDD = macroInputRDD.mapToPair(new Initialization(fem.cellModel.nely,fem.cellModel.nelx));
+                }
+                JavaPairRDD<Integer, Tuple3<DoubleMatrix, Double, DoubleMatrix>> microInputRDD = macroInputRDD.flatMapToPair(macroOptimization);
+                JavaPairRDD<Integer, Tuple3<DoubleMatrix, Double, DoubleMatrix>> parallelizedMicroInputRDD = microInputRDD.repartitionAndSortWithinPartitions(microOutputRDDPartitioner);
+                JavaPairRDD<Integer, Tuple3<DoubleMatrix, Double, DoubleMatrix>> parallelizedMicroOutputRDD = parallelizedMicroInputRDD.mapToPair(microOptimization);
                 List<Tuple2<Integer, Tuple3<DoubleMatrix, Double, DoubleMatrix>>> iterationResult = parallelizedMicroOutputRDD.collect();
                 ArrayList<Tuple2<Integer, Tuple3<ArrayList<DoubleMatrix>, DoubleMatrix, ArrayList<DoubleMatrix>>>> nextIteratioInputData = merge(iterationResult, fem.nely, fem.nelx);
                 postProcess.plotGrayscale(postProcess.plotWindow, nextIteratioInputData.get(0)._2._2().mmul(-1).add(1).toArray2());
