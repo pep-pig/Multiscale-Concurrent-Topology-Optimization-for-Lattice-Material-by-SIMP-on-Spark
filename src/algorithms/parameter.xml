@@ -2,9 +2,9 @@
 <multiscaleOptimization>
     <parameter name = "macroMeshParameter">
         <length>60</length>
-        <height>24</height>
+        <height>12</height>
         <nelx>60</nelx>
-        <nely>24</nely>
+        <nely>12</nely>
         <force>-10</force>
         <boundaryCondition>3</boundaryCondition>
     </parameter>
@@ -12,8 +12,8 @@
     <parameter name = "microMeshParameter">
         <length>1</length>
         <height>1</height>
-        <nelx>20</nelx>
-        <nely>20</nely>
+        <nelx>15</nelx>
+        <nely>15</nely>
         <lambda>0.33</lambda>
         <mu>0.3846</mu>
     </parameter>
@@ -45,7 +45,7 @@
     </parameter>
 
     <parameter name = "cpuCores">
-        <cpu>12</cpu>
+        <cpu>2</cpu>
     </parameter>
 </multiscaleOptimization>
 
