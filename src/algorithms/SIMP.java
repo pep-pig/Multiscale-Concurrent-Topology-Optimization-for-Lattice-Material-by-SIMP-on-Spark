@@ -25,8 +25,8 @@ public class SIMP {
     public int macroEle;
     public FiniteElementAnalysis fem = new FiniteElementAnalysis();
 
-    public SIMP(){
-        Parameter.init(fem);
+    public SIMP(String path){
+        Parameter.init(fem,path);
     }
 
     public  FiniteElementAnalysis macroSimp(PostProcess postProcess) {
@@ -87,7 +87,9 @@ public class SIMP {
             macroChange = MatrixFunctions.abs(fem.macroDensity.sub(oldMacroDensity)).max();
             //step4 update microDensity for each cell
             if(iteration>fem.microOptimizationStartIteration){
-                fem.reInitMicroDensity();
+                if((iteration-fem.microOptimizationStartIteration)==1){
+                    fem.reInitMicroDensity();
+                }
                 for (int ele=0;ele<fem.nelx*fem.nely;ele++){
                     macroEle = ele;
                     //System.out.println("  microCell"+ele+" start");
@@ -110,7 +112,7 @@ public class SIMP {
             }
             postProcess.plotGrayscale(postProcess.plotWindow,fem.macroDensity.mmul(-1).add(1).toArray2());
             postProcess.plotRealStructure(postProcess.resultWindow,fem.microDensity,fem.nely);
-            System.out.println("macroIteration finished;  updating macro material properties by homogenize");
+            //System.out.println("macroIteration finished;  updating macro material properties by homogenize");
         }
         computeFinished = true;
         long end = System.currentTimeMillis();

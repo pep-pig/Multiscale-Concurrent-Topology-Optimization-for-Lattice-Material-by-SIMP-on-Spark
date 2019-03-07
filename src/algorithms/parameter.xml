@@ -1,47 +1,45 @@
 <?xml version="1.0" encoding = "UTF-8" ?>
 <multiscaleOptimization>
     <parameter name = "macroMeshParameter">
-        <length>50</length>
-        <height>25</height>
-        <nelx>50</nelx>
-        <nely>25</nely>
-        <force>-1</force>
-        <boundaryCondition>1</boundaryCondition>
+        <length>60</length>
+        <height>24</height>
+        <nelx>60</nelx>
+        <nely>24</nely>
+        <force>-10</force>
+        <boundaryCondition>3</boundaryCondition>
     </parameter>
     <!--element in micro must be square,because the filter is adjust for square element at this time-->
     <parameter name = "microMeshParameter">
         <length>1</length>
         <height>1</height>
-        <nelx>10</nelx>
-        <nely>10</nely>
+        <nelx>20</nelx>
+        <nely>20</nely>
         <lambda>0.33</lambda>
         <mu>0.3846</mu>
     </parameter>
 
     <parameter name = "macroSimpParameter">
-        <penal>3</penal>
+        <penal>1</penal>
         <filterRadius>1.5</filterRadius>
         <volf>0.5</volf>
         <stopChangeValue>0.0001</stopChangeValue>
-        <stopIteration>40</stopIteration>
-        <microOptimizationStartIteration>0</microOptimizationStartIteration>
+        <stopIteration>30</stopIteration>
+        <microOptimizationStartIteration>10</microOptimizationStartIteration>
     </parameter>
-
-    <parameter name = "microSimpParameter">
-        <penal>3.0</penal>
-        <filterRadius>1.5</filterRadius>
-        <stopChangeValue>0.01</stopChangeValue>
-        <stopIteration>100</stopIteration>
-    </parameter>
-
     <parameter name = "macroOcParameter">
         <move>0.2</move>
         <densityUpperLimit>1</densityUpperLimit>
         <densityLowerLimit>0.001</densityLowerLimit>
     </parameter>
 
+    <parameter name = "microSimpParameter">
+        <penal>3</penal>
+        <filterRadius>1.5</filterRadius>
+        <stopChangeValue>0.01</stopChangeValue>
+        <stopIteration>1</stopIteration>
+    </parameter>
     <parameter name = "microOcParameter">
-        <move>0.1</move>
+        <move>0.15</move>
         <densityUpperLimit>1.0</densityUpperLimit>
         <densityLowerLimit>0.001</densityLowerLimit>
     </parameter>

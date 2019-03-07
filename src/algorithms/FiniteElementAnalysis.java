@@ -45,7 +45,7 @@ public class FiniteElementAnalysis {
     ArrayList<Double> macroEnergy = new ArrayList<Double>();
     ArrayList<Double> [] microEnergy ;
     ArrayList<Double>macroVolume = new ArrayList<Double>();
-    ArrayList<Double> [] microVolume;
+    ArrayList<Double> [] microVolume ;
 
     //Simp parameter
     double macroStopChangeValue;
@@ -114,7 +114,8 @@ public class FiniteElementAnalysis {
 
     public void reInitMicroDensity(){
         for (int ele = 0;ele<nelx*nely;ele++){
-            microDensity.set(ele,DoubleMatrix.ones(cellModel.nely,cellModel.nelx).mul(macroDensity.get(ele)));
+            //microDensity.set(ele,DoubleMatrix.ones(cellModel.nely,cellModel.nelx).mul(macroDensity.get(ele)));
+            microDensity.set(ele,DoubleMatrix.ones(cellModel.nely,cellModel.nelx).mul(Math.pow(macroDensity.get(ele),1)));
         }
     }
     public  void initialMacroMaterialModel(double penal) {
@@ -122,8 +123,9 @@ public class FiniteElementAnalysis {
         double ely = cellModel.height/cellModel.nely;
         this.penal = penal;
         macroDensity = DoubleMatrix.ones(nely,nelx).mul(volf);
+        DoubleMatrix ce = Homogenization.homogenize(elx,ely,microDensity.get(0).mul(cellModel.lambda),microDensity.get(0).mul(cellModel.mu)).div(Math.pow(macroDensity.get(0),penal));
         for(int i = 0; i < nely*nelx; i++) {
-            C.add(Homogenization.homogenize(elx,ely,microDensity.get(i).mul(cellModel.lambda),microDensity.get(i).mul(cellModel.mu)));
+            C.add(new DoubleMatrix(ce.toArray2()));
         }
     }
     public void updateMacroMaterialModel(){
@@ -147,6 +149,7 @@ public class FiniteElementAnalysis {
     public  DoubleMatrix calculateMacroElementStiffness(int elementNumber){
         double a = length/nelx;
         double b = height/nely;
+        //TODO CH should be divede by F(p)
         return gaussIntegration(a,b,C.get(elementNumber));
     }
 
@@ -235,18 +238,18 @@ public class FiniteElementAnalysis {
     public Map<String,DoubleMatrix> boundaryCondition3(double force){
         Map<String,DoubleMatrix> boundaryConditions = new HashMap<String,DoubleMatrix>();
         DoubleMatrix loadConstrains = new DoubleMatrix(1,2);
-        DoubleMatrix displacementConstrains = new DoubleMatrix(4,2);
+        DoubleMatrix displacementConstrains = new DoubleMatrix(3,2);
 
         displacementConstrains.put(0,0,(nely+1)*2-1);
         displacementConstrains.put(0,1,0);
         displacementConstrains.put(1,0,(nely+1)*2);
         displacementConstrains.put(1,1,0);
-        displacementConstrains.put(2,0,(nelx+1)*(nely+1)*2-1);
+        //displacementConstrains.put(2,0,(nelx+1)*(nely+1)*2-1);
+        //displacementConstrains.put(2,1,0);
+        displacementConstrains.put(2,0,(nelx+1)*(nely+1)*2);
         displacementConstrains.put(2,1,0);
-        displacementConstrains.put(3,0,(nelx+1)*(nely+1)*2);
-        displacementConstrains.put(3,1,0);
 
-        loadConstrains.put(0,0,((nelx)/2-1)*(nely+1)*2+2);
+        loadConstrains.put(0,0,((nelx)/2)*(nely+1)*2+2);
         loadConstrains.put(0,1,force);
         boundaryConditions.put("loadConstrains",loadConstrains);
         boundaryConditions.put("displacementConstrains",displacementConstrains);

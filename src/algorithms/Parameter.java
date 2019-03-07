@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class Parameter {
     public  Parameter(){}
-    public static void init(FiniteElementAnalysis fem) {
+    public static void init(FiniteElementAnalysis fem,String path) {
         //Create a DocumentBuilderFactory instance
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         //Create a DocumentBuilder instance
@@ -19,7 +19,7 @@ public class Parameter {
             //create DocumentBuilder instance
             DocumentBuilder db = dbf.newDocumentBuilder();
             //load parameter.xml file to current project directory by parser method of  DocumentBuilder
-            Document document = db.parse("src/algorithms/parameter.xml");
+            Document document = db.parse(path);
             //obtain all nodes of which tag name is parameter
             NodeList parameterList = document.getElementsByTagName("parameter");
             for (int i = 0; i < parameterList.getLength(); i++) {

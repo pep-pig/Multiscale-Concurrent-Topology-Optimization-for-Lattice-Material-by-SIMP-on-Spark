@@ -8,8 +8,11 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class PostProcess  {
-    public PostProcess(){
-
+    public PostProcess(int nelx,int nely,int cellNelx,int cellNely){
+            this.nelx =(double)nelx;
+            this.nely = (double)nely;
+            this.cellNelx = cellNelx;
+            this.cellNely = cellNely;
             this.dataWindowOfMacro = new DataWindow("Macro Convergence Curve");
             this.dataWindowOfMicro = new DataWindow("Micro Convergence Curve");
             this.plotWindow = new PlotWindow("Macro Grayscale");
@@ -20,6 +23,8 @@ public class PostProcess  {
     DataWindow dataWindowOfMicro;
     PlotWindow plotWindow;
     ResultWindow resultWindow;
+    double nelx,nely;
+    int cellNelx,cellNely;
 
     public class DataWindow extends JFrame{
 
@@ -160,7 +165,7 @@ public class PostProcess  {
 
     public class PlotWindow extends JFrame{
         int iteration = 0;
-        int[][] grayValue;
+        int[][] grayValue = new int[(int)nelx][(int)nely];
         private javax.swing.JPanel plotPanel;
         private PlotWindow(String title){
             initComponents();
@@ -172,9 +177,9 @@ public class PostProcess  {
         }
 
         public void paint(Graphics g){
-            super.paint(g);
+            //super.paint(g);
             BufferedImage bufImg = convertRGBImage(grayValue);
-            g.drawImage(bufImg,plotPanel.getX()+50,plotPanel.getY()+60,plotPanel.getX()+plotPanel.getWidth()-80,plotPanel.getY()+plotPanel.getHeight()-60,this);
+            g.drawImage(bufImg,plotPanel.getX()+50,plotPanel.getY()+60,plotPanel.getWidth()-80,(int)((plotPanel.getWidth()-80)*(nely/nelx)),this);
         }
 
         public BufferedImage convertRGBImage(int[][] rgbValue){
@@ -195,8 +200,8 @@ public class PostProcess  {
         private void initComponents() {
             plotPanel = new javax.swing.JPanel();
             plotPanel.setBackground(new java.awt.Color(255, 255, 255));
-            plotPanel.setMinimumSize(new java.awt.Dimension(400, 250));
-            plotPanel.setPreferredSize(new java.awt.Dimension(400, 250));
+            plotPanel.setMinimumSize(new java.awt.Dimension(nelx>nely?1000:(int)(800*(nelx/nely)), nelx>nely?(int)(1000*(nely/nelx)+30):800));
+            plotPanel.setPreferredSize(new java.awt.Dimension(nelx>nely?1000:(int)(800*(nelx/nely)), nelx>nely?(int)(1000*(nely/nelx)+30):800));
             getContentPane().add(plotPanel, java.awt.BorderLayout.CENTER);
             pack();
         }
@@ -214,41 +219,46 @@ public class PostProcess  {
 
     public class ResultWindow extends JFrame{
         int iteration = 0;
-        int numberOfCellY;
+        int numberOfCellY=(int)nely;
 
         ArrayList<DoubleMatrix> microDensity = new ArrayList<DoubleMatrix>();
+
         private javax.swing.JPanel plotPanel;
         private ResultWindow(String title){
             initComponents();
             setTitle(title);
+            for (int i=0;i<nelx*nely;i++) {
+                microDensity.add(new DoubleMatrix(cellNelx, cellNely));
+            }
         }
-
         private void setMicroDensity(ArrayList<DoubleMatrix> microDensity,int numberOfCellY){
             this.numberOfCellY = numberOfCellY;
             this.microDensity = microDensity;
         }
 
         public void paint(Graphics g){
+            //super.paint(g);
             int xStart = plotPanel.getX()+50;
-            int xEnd = plotPanel.getX()+plotPanel.getWidth()-80;
-            int yStart = plotPanel.getY()+60;
-            int yEnd = plotPanel.getY()+plotPanel.getHeight()-60;
+            int xEnd = plotPanel.getX()+plotPanel.getWidth();
+            int yStart = plotPanel.getY()+50;
+            //int yEnd = plotWindow.getY()+(int)((xEnd-xStart)*(nely/nelx));
+            int yEnd = plotPanel.getY()+plotPanel.getHeight();
             int rows = numberOfCellY;
             int columns =  microDensity.size()/numberOfCellY;
-            int xInterval =(xEnd-xStart)/columns;
+            int xInterval =(int)((xEnd-xStart)/(double)columns);
             //int yInterval = (yEnd-yStart)/rows;
+            //int xInterval = yInterval;
             int yInterval = xInterval;
-            super.paint(g);
             int k = 0;
             for(int j = 0;j<columns;j++){
                 for(int i = 0;i<rows;i++){
                     BufferedImage bufImg = convertRGBImage(microDensity.get(k).mul(-1).add(1).mul(255).toIntArray2());
                     k++;
                     g.drawImage(bufImg,xStart,yStart,xInterval,yInterval,this);
-                    yStart = yStart+yInterval+1;
+                    yStart = yStart+yInterval;
                 }
-                xStart = xStart+yInterval+2;
-                yStart = plotPanel.getY()+60;
+                xStart = xStart+yInterval;
+                yStart = plotPanel.getY()+50;
             }
         }
 
@@ -270,8 +280,8 @@ public class PostProcess  {
         private void initComponents() {
             plotPanel = new javax.swing.JPanel();
             plotPanel.setBackground(new java.awt.Color(255, 255, 255));
-            plotPanel.setMinimumSize(new java.awt.Dimension(400, 250));
-            plotPanel.setPreferredSize(new java.awt.Dimension(400, 250));
+            plotPanel.setMinimumSize(new java.awt.Dimension(nelx>nely?1000:(int)(800*(nelx/nely)), nelx>nely?(int)(1000*(nely/nelx)+30):800));
+            plotPanel.setPreferredSize(new java.awt.Dimension(nelx>nely?1000:(int)(800*(nelx/nely)), nelx>nely?(int)(1000*(nely/nelx)+30):800));
             getContentPane().add(plotPanel, java.awt.BorderLayout.CENTER);
             pack();
         }
