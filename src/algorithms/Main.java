@@ -3,7 +3,8 @@ package algorithms;
 public class Main {
     public static void main(String[] args) {
         final Optimizer multiscaleOptimizer = new Optimizer();
-        final PostProcess postProcess = new PostProcess();
+        final FiniteElementAnalysis fem= new FiniteElementAnalysis();
+        final PostProcess postProcess = new PostProcess(fem.nelx,fem.nely,fem.cellModel.nelx,fem.cellModel.nely);
         Thread computeThread = new Thread(new Runnable() {
             public void run() {
                 multiscaleOptimizer.compute(postProcess);

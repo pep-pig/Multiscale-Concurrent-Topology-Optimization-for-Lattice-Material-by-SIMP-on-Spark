@@ -15,7 +15,7 @@ public class Optimizer {
     Optimizer(){
     }
     public void compute(PostProcess postProcess) {
-        SparkConf conf = new SparkConf().setAppName("MultiscaleOptimization").setMaster("local[28]");
+        SparkConf conf = new SparkConf().setAppName("MultiscaleOptimization").setMaster("local[2]");
 //        SparkConf conf = new SparkConf().setAppName("MultiscaleOptimization").setMaster("spark://master:7077").set("spark.driver.host","115.156.249.7")
 //                .setJars(new String[]{"H:\\OneDrive\\毕业论文\\multiscaleOptimization-Spark\\out\\artifacts\\multiscaleOptimization_jar\\multiscaleOptimization.jar"});
         JavaSparkContext jsc = new JavaSparkContext(conf);
