@@ -54,7 +54,7 @@ public class MicroOptimize implements Runnable {
         }
         double elx = fem.cellModel.length/fem.cellModel.nelx;
         double ely = fem.cellModel.height/fem.cellModel.nely;
-        fem.C.set(macroEle,Homogenization.homogenize(elx,ely,fem.microDensity.get(macroEle).mul(fem.cellModel.lambda),fem.microDensity.get(macroEle).mul(fem.cellModel.mu)));
+        fem.C.set(macroEle,Homogenization.homogenize(elx,ely,fem.microDensity.get(macroEle).mul(fem.cellModel.lambda),fem.microDensity.get(macroEle).mul(fem.cellModel.mu)).div(fem.macroDensity.get(macroEle)));
         lock.lock();
             num++;
         lock.unlock();
