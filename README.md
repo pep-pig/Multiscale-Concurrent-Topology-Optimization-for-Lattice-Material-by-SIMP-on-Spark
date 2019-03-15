@@ -14,3 +14,4 @@ Multiscale concurrent optimization on spark
 ## Spark version
 　　1.Spark is a distributed parallel computing frame. If you have a spark cluster, you can try to use this version to accellerate your computing if your model is large.
  
+## NOTE:you should use Solve.solve(K,F),instead Solve.solvePositive(K,F),because Solve.solve(K,F) is much faster.
