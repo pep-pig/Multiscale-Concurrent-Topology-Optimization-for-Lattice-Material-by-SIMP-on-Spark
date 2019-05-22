@@ -4,6 +4,7 @@ import org.apache.spark.api.java.function.PairFunction;
 import org.jblas.DoubleMatrix;
 import scala.Tuple2;
 import scala.Tuple3;
+import scala.Tuple4;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,14 +13,23 @@ import java.util.Map;
 import static org.jblas.MatrixFunctions.sqrt;
 
 public class SingleMacroOptimization extends MacroFiniteElementAnalysis implements PairFunction<Tuple2<Integer, Tuple3<ArrayList<DoubleMatrix>, DoubleMatrix, ArrayList<DoubleMatrix>>>, Integer, Tuple3<ArrayList<DoubleMatrix>, DoubleMatrix, ArrayList<DoubleMatrix>>> {
-    SingleMacroOptimization(){
+    ComplianceAccumulatorV2 complianceAccumulatorV2;
+    public SingleMacroOptimization(){
     }
+    public SingleMacroOptimization(ComplianceAccumulatorV2 complianceAccumulatorV2){
+        this.complianceAccumulatorV2 = complianceAccumulatorV2;
+    }
+//    public SingleMacroOptimization(ComplianceAccumulatorV2 complianceAccumulatorV2){
+//        this.complianceAccumulatorV2 = complianceAccumulatorV2;
+//    }
     public Tuple2<Integer, Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>> call(Tuple2<Integer, Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>> macroInputRDD) throws Exception {
         Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>> nextInput = simp(macroInputRDD._2());
-        Tuple2<Integer,Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>> nextInputRDD=new Tuple2<Integer,Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>>(1,nextInput);
+        Tuple2<Integer,Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>> nextInputRDD= new Tuple2<>(1,nextInput);
         return nextInputRDD;
     }
     public Tuple3 simp(Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>> macroInputRDD){
+
+        StringBuffer content = new StringBuffer();
         ArrayList<DoubleMatrix> microDensity = macroInputRDD._3();
         DoubleMatrix macroDensity = macroInputRDD._2();
         ArrayList<DoubleMatrix> materialMatrixC = macroInputRDD._1();
@@ -50,7 +60,7 @@ public class SingleMacroOptimization extends MacroFiniteElementAnalysis implemen
         macroEnergyDerivative = macroFilter(macroEnergyDerivative,macroDensity);
         macroDensity = oc(macroEnergyDerivative,macroDensity);
         double volumeFactor = macroDensity.sum()/(nelx*nely);
-        System.out.println("MacroIteration:"+iteration+";  macroEnergy:"+macroEnergy+";  volumeFactor:"+volumeFactor);
+        complianceAccumulatorV2.add("macroEnergy:"+macroEnergy+";  volumeFactor:"+volumeFactor);
         return new Tuple3<>(materialMatrixC, macroDensity, microDensity);
     }
     public DoubleMatrix macroFilter(DoubleMatrix macroDc,DoubleMatrix macroDensity){
@@ -96,4 +106,6 @@ public class SingleMacroOptimization extends MacroFiniteElementAnalysis implemen
         }
         return  newDensity;
     }
+
+
 }

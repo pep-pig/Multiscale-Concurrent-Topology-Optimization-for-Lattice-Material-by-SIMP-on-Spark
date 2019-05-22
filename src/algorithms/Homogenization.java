@@ -110,7 +110,7 @@ public class Homogenization {
         //TODO discard the origin K to save the memory
         K = K.get(indices,indices);
         F = F.get(indices,new int[]{0,1,2});
-        microDisplacement.put(indices,new int[]{0,1,2},Solve.solvePositive(K,F));
+        microDisplacement.put(indices,new int[]{0,1,2},Solve.solve(K,F));
 
         /*step7:
         Homegenization
@@ -121,7 +121,7 @@ public class Homogenization {
         DoubleMatrix ke = ((DoubleMatrix) keAndFeMatrix.get("keLambda")).add((DoubleMatrix)keAndFeMatrix.get("keMu"));
         DoubleMatrix fe = ((DoubleMatrix) keAndFeMatrix.get("feLambda")).add((DoubleMatrix)keAndFeMatrix.get("feMu"));
         int[] index = new int[]{2,4,5,6,7};
-        initialMicroDisplacement.put(index,new int[]{0,1,2},Solve.solvePositive(ke.get(index,index),fe.get(index,new int[]{0,1,2})));
+        initialMicroDisplacement.put(index,new int[]{0,1,2},Solve.solve(ke.get(index,index),fe.get(index,new int[]{0,1,2})));
         //caculate the effective material properties
         for (int i=0;i<=2;i++)
         {

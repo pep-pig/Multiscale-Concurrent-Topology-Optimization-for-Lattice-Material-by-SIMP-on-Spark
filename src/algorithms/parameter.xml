@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding = "UTF-8" ?>
 <multiscaleOptimization>
     <parameter name = "macroMeshParameter">
-        <length>60</length>
-        <height>12</height>
-        <nelx>60</nelx>
-        <nely>12</nely>
+        <length>12</length>
+        <height>6</height>
+        <nelx>12</nelx>
+        <nely>6</nely>
         <force>-10</force>
-        <boundaryCondition>3</boundaryCondition>
+        <boundaryCondition>1</boundaryCondition>
     </parameter>
     <!--element in micro must be square,because the filter is adjust for square element at this time-->
     <parameter name = "microMeshParameter">
         <length>1</length>
         <height>1</height>
-        <nelx>15</nelx>
-        <nely>15</nely>
+        <nelx>20</nelx>
+        <nely>20</nely>
         <lambda>0.33</lambda>
         <mu>0.3846</mu>
     </parameter>
@@ -23,8 +23,8 @@
         <filterRadius>1.5</filterRadius>
         <volf>0.5</volf>
         <stopChangeValue>0.0001</stopChangeValue>
-        <stopIteration>30</stopIteration>
-        <microOptimizationStartIteration>10</microOptimizationStartIteration>
+        <stopIteration>50</stopIteration>
+        <microOptimizationStartIteration>20</microOptimizationStartIteration>
     </parameter>
     <parameter name = "macroOcParameter">
         <move>0.2</move>
@@ -44,8 +44,14 @@
         <densityLowerLimit>0.001</densityLowerLimit>
     </parameter>
 
+    <parameter name = "postprocess">
+        <densityFilterThreshold>0.101</densityFilterThreshold>
+        <dataSavePath>/usr/multiscaleOptimization</dataSavePath>
+    </parameter>
+
+    <!--this setting is used to set the number of RDD, which is equals cpuCores*3-->
     <parameter name = "cpuCores">
-        <cpu>2</cpu>
+        <cpu>4</cpu>
     </parameter>
 </multiscaleOptimization>
 
