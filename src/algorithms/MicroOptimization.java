@@ -18,6 +18,7 @@ import static org.jblas.MatrixFunctions.sqrt;
 public class MicroOptimization extends MicroFiniteElementAnalysis implements PairFunction<Tuple2<Integer, Tuple3<DoubleMatrix,Double,DoubleMatrix>>, Integer, Tuple3<DoubleMatrix,Double,DoubleMatrix>> {
 
     public MicroOptimization(){
+        System.out.println("初始化MicroOptimization");
     }
     public Tuple2<Integer, Tuple3<DoubleMatrix,Double,DoubleMatrix>> call(Tuple2<Integer, Tuple3<DoubleMatrix,Double,DoubleMatrix>> microInputRDD) throws Exception {
         int eleNum = microInputRDD._1;

@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 
 public class Parameter {
+    public static int initTimes=0;
     public  Parameter(){}
     public static void init(FiniteElementAnalysis fem) {
         //Create a DocumentBuilderFactory instance
@@ -19,10 +20,16 @@ public class Parameter {
             //create DocumentBuilder instance
             DocumentBuilder db = dbf.newDocumentBuilder();
             //load parameter.xml file to current project directory by parser method of  DocumentBuilder
-            //System.out.println("初始化宏观参数");
-            //System.out.println(fem.getClass().getResource("parameter.xml"));
+
+            //Local model
+//            String pathOfJar = fem.getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
+//            String path= fem.getClass().getProtectionDomain().getCodeSource().getLocation().getFile().substring(0,pathOfJar.lastIndexOf(System.getProperty("path.separator"))+1);
+//            System.out.println(path);
+//            Document document = db.parse(path+"parameter.xml");
+
+            //Cluster model and local debug model
             Document document = db.parse(fem.getClass().getResourceAsStream("parameter.xml"));
-            //System.out.println("初始化宏观参数成功");
+
             //obtain all nodes of which tag name is parameter
             NodeList parameterList = document.getElementsByTagName("parameter");
             for (int i = 0; i < parameterList.getLength(); i++) {
@@ -154,7 +161,20 @@ public class Parameter {
                         }
                     }
                 }
-
+                if(type.equals("postprocess")){
+                    NodeList childList = parameter.getChildNodes();
+                    for (int j = 1; j < childList.getLength(); j+=2){
+                        Node node = childList.item(j);
+                        String key = node.getNodeName();
+                        String value = node.getFirstChild().getTextContent();
+                        if(key.equals("densityFilterThreshold")){
+                            fem.densityThreshold = Double.parseDouble(value);
+                        }
+                        if(key.equals("dataSavePath")){
+                            fem.path = value;
+                        }
+                    }
+                }
             }
 
         } catch (ParserConfigurationException e) {
@@ -166,6 +186,6 @@ public class Parameter {
         }
         fem.setMacroMeshModel();
         fem.setMicroMeshModel();
-
+        initTimes++;
     }
 }

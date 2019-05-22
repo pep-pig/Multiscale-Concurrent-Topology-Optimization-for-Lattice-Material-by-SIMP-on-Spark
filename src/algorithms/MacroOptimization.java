@@ -6,6 +6,7 @@ import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.jblas.DoubleMatrix;
 import org.jblas.MatrixFunctions;
+import postprocess.Logger;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.xml.PrettyPrinter;
@@ -17,7 +18,11 @@ import java.util.Map;
 import static org.jblas.MatrixFunctions.sqrt;
 
 public class MacroOptimization extends MacroFiniteElementAnalysis implements PairFlatMapFunction<Tuple2<Integer, Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>>, Integer, Tuple3<DoubleMatrix,Double,DoubleMatrix>> {
-    MacroOptimization(){
+    private ComplianceAccumulatorV2 complianceAccumulatorV2;
+    public MacroOptimization(){
+    }
+    public MacroOptimization(ComplianceAccumulatorV2 complianceAccumulatorV2){
+        this.complianceAccumulatorV2 = complianceAccumulatorV2;
     }
     public Iterator<Tuple2<Integer, Tuple3<DoubleMatrix,Double,DoubleMatrix>>> call(Tuple2<Integer, Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>> macroInputRDD) throws Exception {
         Tuple3<DoubleMatrix,DoubleMatrix,ArrayList<DoubleMatrix>> microInput = simp(macroInputRDD._2());
@@ -60,8 +65,8 @@ public class MacroOptimization extends MacroFiniteElementAnalysis implements Pai
         macroEnergyDerivative = macroFilter(macroEnergyDerivative,macroDensity);
         macroDensity = oc(macroEnergyDerivative,macroDensity);
         double volumeFactor = macroDensity.sum()/(nelx*nely);
-        System.out.println("MacroIteration:"+iteration+";  macroEnergy:"+macroEnergy+";  volumeFactor:"+volumeFactor);
-        return new Tuple3<DoubleMatrix,DoubleMatrix,ArrayList<DoubleMatrix>>(macroU,macroDensity,microDensity);
+        complianceAccumulatorV2.add("macroEnergy:"+macroEnergy+";  volumeFactor:"+volumeFactor);
+        return new Tuple3<>(macroU, macroDensity, microDensity);
     }
     public DoubleMatrix macroFilter(DoubleMatrix macroDc,DoubleMatrix macroDensity){
         DoubleMatrix modifiedEnergyDerivative = new DoubleMatrix(nely,nelx);

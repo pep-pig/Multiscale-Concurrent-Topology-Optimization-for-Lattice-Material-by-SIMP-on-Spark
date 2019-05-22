@@ -13,7 +13,10 @@ import static java.lang.Math.sqrt;
 
 public  class FiniteElementAnalysis {
     FiniteElementAnalysis(){
+        long startInit=System.currentTimeMillis();
         Parameter.init(this);
+        long endInit=System.currentTimeMillis();
+        //System.out.println("initTime:"+(endInit-startInit));
     }
     public class CellModel{
         double length;
@@ -59,6 +62,9 @@ public  class FiniteElementAnalysis {
     double microOcMove;
     double microOcDensityUpperLimit;
     double microOcDensityLowerLimit;
+    //postprocess
+    String path;
+    double densityThreshold;
     //parallism setting
     int cpu;
     public DoubleMatrix gaussIntegration(double a, double b, DoubleMatrix C){
@@ -80,6 +86,7 @@ public  class FiniteElementAnalysis {
         }
         return ke;
     }
+
     public  void put(int[] rindices,int[] cindices,DoubleMatrix src,DoubleMatrix des){
         for (int i=0;i<src.getColumns();i++){
             for(int j=0;j<src.getRows();j++){
@@ -87,6 +94,7 @@ public  class FiniteElementAnalysis {
             }
         }
     }
+
     public Map<String,DoubleMatrix> implementBoundaryConditions(DoubleMatrix K, DoubleMatrix loadConstrains, DoubleMatrix displacementConstrains){
         Map<String,DoubleMatrix> linearSystem = new HashMap<String, DoubleMatrix>();
         DoubleMatrix F = DoubleMatrix.zeros(K.getRows(),1);
@@ -110,8 +118,9 @@ public  class FiniteElementAnalysis {
         return U.get(nodeNumberMatrix.getRow(elementNumber).sub(1).toIntArray(),0);
     }
     public  DoubleMatrix solve(DoubleMatrix K,DoubleMatrix F){
-        return Solve.solvePositive(K,F);
+        return Solve.solveSymmetric(K,F);
     }
+
     public  void setMacroMeshModel() {
         //generate node number ordered by column ,and x-diretion first ,y-direction second;
         int elementAmount = nelx * nely;
@@ -127,6 +136,7 @@ public  class FiniteElementAnalysis {
         nodeNumberMatrix = firstNodeNumbersOfElements.repmat(1, 8).add(new DoubleMatrix(1, 8, nodeNumberOffset).repmat(elementAmount, 1));
 
     }
+
     public void setMicroMeshModel(){
         int elementAmount = cellModel.nelx * cellModel.nely;
         double[] order;
