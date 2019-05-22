@@ -29,8 +29,9 @@
 </p>
 
 # How to use?
-*step1: you should have a spark enviroment*<br>
+*step1: you should have a spark environment*<br>
 *step2: config the input in the parameter.xml which include mesh mode,boundary condition,cpu numbers to use,path for data writing and more.*<br>
 *step3: Packaging the java code as jar file ,and submit to spark . There are two kinds of running mode of spark program.*<br>
 * `--local mode`:in this mode,you can run the program on windows or linux 
-* `--cluster mode`:in this mode ,you can run the program only on linux 
+* `--cluster mode`:in this mode ,you can run the program only on linux<br>
+### if you have any questions please write them on the issue page
