@@ -4,6 +4,7 @@
 <p align="center">
 <img src="Imgs/Img1.png" width="460"/>
 </p>
+
 ## Distributed Parallel Optimization Method
 * Our distributed parallel optimization is based on spark,the DAG is as follows:
 <p align="center">
@@ -12,6 +13,7 @@
 <p align="center">
 <img src="Imgs/Img7.png" width="460"/>
 </p>
+
 ## Numerical Example
 * Boundary conditions of cantilevel beam and the topology result
 <p align="center">
@@ -27,9 +29,10 @@
 <p align="center">
 <img src="Imgs/Img5.png" width="460"/>
 </p>
+
 # How to use?
-*step1.you should have a spark enviroment*
-*step2.config the input in the parameter.xml which include mesh mode,boundary condition,cpu numbers to use,path for data writing and more.*
-*step3.Packaging the java code as jar file ,and submit to spark . There are two kinds of running mode of spark program.*
+*step1: you should have a spark enviroment*<br>
+*step2: config the input in the parameter.xml which include mesh mode,boundary condition,cpu numbers to use,path for data writing and more.*<br>
+*step3: Packaging the java code as jar file ,and submit to spark . There are two kinds of running mode of spark program.*<br>
 * `--local mode`:in this mode,you can run the program on windows or linux 
 * `--cluster mode`:in this mode ,you can run the program only on linux 
