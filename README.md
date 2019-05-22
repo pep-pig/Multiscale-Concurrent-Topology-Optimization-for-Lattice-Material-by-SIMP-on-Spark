@@ -17,10 +17,8 @@
 ## Numerical Example
 * Boundary conditions of cantilevel beam and the topology result
 <p align="center">
-<img src="Imgs/Img2.png" width="460"/>
-</p>
-<p align="center">
-<img src="Imgs/Img3.png" width="460"/>
+<img src="Imgs/Img2.png" width="230"/>
+<img src="Imgs/Img3.png" width="230"/>
 </p>
 * Boundary conditions of MMB and the topology result
 <p align="center">
