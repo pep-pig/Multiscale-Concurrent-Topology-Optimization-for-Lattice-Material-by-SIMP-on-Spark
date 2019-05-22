@@ -1,10 +1,35 @@
-# Multiscale-Concurrent-Optimization
-Multiscale concurrent optimization on spark 
-## Serial version
-　　1.This version contain three benchmark,boundary condition 1 and 2 are cantilever beams and boundary condition 3 is MMB.</br>
-　　2.Optimization method in macro and micro are both SIMP method.</br>
-　　3.The effective material properties is computed by homogenization method.</br>
-　　4.All parameters you can change can be configured in file parameter.xml.</br>
-## Parallel version
-　　1. parallel version use java multithread to accelerate the computing. </br>
-　　2. you can according the number of cpu in your computer to set the number of computing thread in parameter.xml.</br>
+# Multiscale-Concurrent-Topology-Optimization-for-Lattice-Material
+## Mutiscale-Optimization
+* Multiscale optimization of lattice materials is a hot topic in the field of structural topology optimization,the picture below shows the difference of topology optimization between continuum structure and lattice material
+<p align="center">
+<img src="Imgs/Img1.png" width="460"/>
+</p>
+## Distributed Parallel Optimization Method
+* Our distributed parallel optimization is based on spark,the DAG is as follows:
+<p align="center">
+<img src="Imgs/Img6.png" width="460"/>
+</p>
+<p align="center">
+<img src="Imgs/Img7.png" width="460"/>
+</p>
+## Numerical Example
+* Boundary conditions of cantilevel beam and the topology result
+<p align="center">
+<img src="Imgs/Img2.png" width="460"/>
+</p>
+<p align="center">
+<img src="Imgs/Img3.png" width="460"/>
+</p>
+* Boundary conditions of MMB and the topology result
+<p align="center">
+<img src="Imgs/Img4.png" width="460"/>
+</p>
+<p align="center">
+<img src="Imgs/Img5.png" width="460"/>
+</p>
+# How to use?
+*step1.you should have a spark enviroment*
+*step2.config the input in the parameter.xml which include mesh mode,boundary condition,cpu numbers to use,path for data writing and more.*
+*step3.Packaging the java code as jar file ,and submit to spark . There are two kinds of running mode of spark program.*
+* `--local mode`:in this mode,you can run the program on windows or linux 
+* `--cluster mode`:in this mode ,you can run the program only on linux 
