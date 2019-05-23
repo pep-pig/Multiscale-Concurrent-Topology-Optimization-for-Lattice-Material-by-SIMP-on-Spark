@@ -19,8 +19,8 @@ public class Optimizer {
 
     public void compute() {
         FiniteElementAnalysis fem = new FiniteElementAnalysis();
-        SparkConf conf = new SparkConf().setAppName("MultiscaleOptimization");
-        //SparkConf conf = new SparkConf().setAppName("MultiscaleOptimization").setMaster("local["+fem.cpu+"]");
+        //SparkConf conf = new SparkConf().setAppName("MultiscaleOptimization");
+        SparkConf conf = new SparkConf().setAppName("MultiscaleOptimization").setMaster("local["+fem.cpu+"]");
 //        SparkConf conf = new SparkConf().setAppName("MultiscaleOptimization").setMaster("spark://master:7077").set("spark.driver.host","115.156.249.7")
 //                .setJars(new String[]{"H:\\OneDrive\\毕业论文\\multiscaleOptimization-Spark\\out\\artifacts\\multiscaleOptimization_jar\\multiscaleOptimization.jar"});
         JavaSparkContext jsc = new JavaSparkContext(conf);
@@ -30,11 +30,14 @@ public class Optimizer {
         MacroOptimization macroOptimization = new MacroOptimization(complianceAccumulatorV2);
         MicroOptimization microOptimization = new MicroOptimization();
         DataLoaderAndPersist dataWriter = new DataLoaderAndPersist(fem.path);
+        DataLoaderAndPersist dataReader = new DataLoaderAndPersist(fem.path);
         Connector connector = new Connector();
         Logger log = new Logger(fem.path);
 
         jsc.sc().register(complianceAccumulatorV2,"complianceValue");
         jsc.setLogLevel("ERROR");
+
+
 
         MicroOutputRDDPartitioner microOutputRDDPartitioner = new MicroOutputRDDPartitioner(fem.cpu, fem.nelx * fem.nely);
         JavaPairRDD<Integer,Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>> initializedMacroInputRDD;
@@ -43,17 +46,26 @@ public class Optimizer {
         double change = 1.0;
         DoubleMatrix oldMacroDensity ;
         //prepare input data
-        Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>> data = fem.variableInit();
+        MacroVariables latestMacroVariables = dataReader.loadMacroVariables();
+        MicroVariables latestMicroVariables = dataReader.loadMicroVariables();
+        Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>> data;
+        if(latestMacroVariables!=null && latestMicroVariables!=null && latestMacroVariables.getIteration()>fem.microOptimizationStartIteration){
+            data = fem.restoreVariable(latestMacroVariables.getMacroVariables(),latestMicroVariables.getMicroVariables());
+            fem.iteration = latestMacroVariables.getIteration()+1;
+        }
+        else {
+            data = fem.variableInit();
+        }
         ArrayList<Tuple2<Integer,Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>>> inputData = new ArrayList<>();
         inputData.add(new Tuple2<>(1, data));
         oldMacroDensity = inputData.get(0)._2._2();
         JavaPairRDD<Integer,Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix,ArrayList<DoubleMatrix>>> macroInputRDD = jsc.parallelizePairs(inputData,1);
         //start Optimize
-        while(fem.iteration<fem.macroStopIteration && change>fem.macroStopChangeValue){
+        while(fem.iteration<fem.macroStopIteration ){
             //MacroOptimization Only
             if(fem.iteration<fem.microOptimizationStartIteration){
                 List<Tuple2<Integer, Tuple3<ArrayList<DoubleMatrix>, DoubleMatrix,ArrayList<DoubleMatrix>>>> nextInput = macroInputRDD.mapToPair(singleMacroOptimization).collect();
-                dataWriter.saveVarialbles(new MacroVariables(nextInput.get(0)._2._2().mmul(-1).add(1).toArray2()),new MicroVariables(nextInput.get(0)._2._3()),fem.iteration);
+                dataWriter.saveVarialbles(new MacroVariables(nextInput.get(0)._2._2().toArray2(),fem.iteration),new MicroVariables(nextInput.get(0)._2._3()),fem.iteration);
                 change = MatrixFunctions.abs(nextInput.get(0)._2._2().sub(oldMacroDensity).max());
                 //oldMacroDensity = nextInput.get(0)._2._2();
                 System.out.println(complianceAccumulatorV2.value());
@@ -80,19 +92,19 @@ public class Optimizer {
                 long endTime=System.currentTimeMillis();
                 System.out.println("微观优化消耗时间："+(endTime-startTime));
                 ArrayList<DoubleMatrix> text = nextIteratioInputData.get(0)._2._3();
-                dataWriter.saveVarialbles(new MacroVariables(nextIteratioInputData.get(0)._2._2().mmul(-1).add(1).toArray2()),new MicroVariables(nextIteratioInputData.get(0)._2._3()),fem.iteration);
+                dataWriter.saveVarialbles(new MacroVariables(nextIteratioInputData.get(0)._2._2().toArray2(),fem.iteration),new MicroVariables(nextIteratioInputData.get(0)._2._3()),fem.iteration);
                 change = MatrixFunctions.abs(nextIteratioInputData.get(0)._2._2().sub(oldMacroDensity).max());
                 macroInputRDD = jsc.parallelizePairs(nextIteratioInputData, 1);
                 fem.iteration++;
                 if(fem.iteration==fem.macroStopIteration){
                     MicroVariables microVariablesWithSurroundConnector = connector.addSurroundConnector(new MacroVariables(nextIteratioInputData.get(0)._2._2().toArray2()),new MicroVariables(nextIteratioInputData.get(0)._2._3()));
-                    dataWriter.saveVarialbles(new MacroVariables(nextIteratioInputData.get(0)._2._2().mmul(-1).add(1).toArray2()),microVariablesWithSurroundConnector,fem.iteration);
+                    dataWriter.saveVarialbles(new MacroVariables(nextIteratioInputData.get(0)._2._2().toArray2(),fem.iteration),microVariablesWithSurroundConnector,fem.iteration);
                     fem.iteration++;
                     MicroVariables microVariablesWithCornerConnector = connector.addCornerConnector(new MacroVariables(nextIteratioInputData.get(0)._2._2().toArray2()),new MicroVariables(nextIteratioInputData.get(0)._2._3()));
-                    dataWriter.saveVarialbles(new MacroVariables(nextIteratioInputData.get(0)._2._2().mmul(-1).add(1).toArray2()),microVariablesWithCornerConnector,fem.iteration);
+                    dataWriter.saveVarialbles(new MacroVariables(nextIteratioInputData.get(0)._2._2().toArray2(),fem.iteration),microVariablesWithCornerConnector,fem.iteration);
                     fem.iteration++;
                     MicroVariables microVariablesWithoutLowDensity = connector.densityFilter(new MacroVariables(nextIteratioInputData.get(0)._2._2().toArray2()),new MicroVariables(nextIteratioInputData.get(0)._2._3()),fem.densityThreshold);
-                    dataWriter.saveVarialbles(new MacroVariables(nextIteratioInputData.get(0)._2._2().mmul(-1).add(1).toArray2()),microVariablesWithoutLowDensity,fem.iteration);
+                    dataWriter.saveVarialbles(new MacroVariables(nextIteratioInputData.get(0)._2._2().toArray2(),fem.iteration),microVariablesWithoutLowDensity,fem.iteration);
                 }
             }
         }

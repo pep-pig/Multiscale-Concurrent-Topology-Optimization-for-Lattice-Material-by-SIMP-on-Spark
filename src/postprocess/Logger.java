@@ -6,7 +6,7 @@ public  class Logger {
     public  FileOutputStream logger;
     public Logger(String directoryPath){
         try {
-            File file = new File(directoryPath+"//log.txt");
+            File file = new File(directoryPath+System.getProperty("file.separator")+"log.txt");
             if(!file.exists()){
                 try {
                     file.createNewFile();
@@ -14,7 +14,7 @@ public  class Logger {
                     e.printStackTrace();
                 }
             }
-            logger = new FileOutputStream(directoryPath+"//log.txt",true);
+            logger = new FileOutputStream(directoryPath+System.getProperty("file.separator")+"log.txt",true);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

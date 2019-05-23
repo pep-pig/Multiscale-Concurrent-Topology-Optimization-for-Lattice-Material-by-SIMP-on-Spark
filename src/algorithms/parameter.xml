@@ -23,8 +23,8 @@
         <filterRadius>1.5</filterRadius>
         <volf>0.5</volf>
         <stopChangeValue>0.0001</stopChangeValue>
-        <stopIteration>50</stopIteration>
-        <microOptimizationStartIteration>20</microOptimizationStartIteration>
+        <stopIteration>80</stopIteration>
+        <microOptimizationStartIteration>40</microOptimizationStartIteration>
     </parameter>
     <parameter name = "macroOcParameter">
         <move>0.2</move>
@@ -46,7 +46,7 @@
 
     <parameter name = "postprocess">
         <densityFilterThreshold>0.101</densityFilterThreshold>
-        <dataSavePath>/usr/multiscaleOptimization</dataSavePath>
+        <dataSavePath>G:\\multiscaleOptimization</dataSavePath>
     </parameter>
 
     <!--this setting is used to set the number of RDD, which is equals cpuCores*3-->

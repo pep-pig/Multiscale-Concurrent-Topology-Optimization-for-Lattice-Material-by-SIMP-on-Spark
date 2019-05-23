@@ -37,7 +37,7 @@ public class DataLoaderAndPersist {
             Object object = objectInputStream.readObject();
             return object;
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return null;
     }
@@ -59,6 +59,8 @@ public class DataLoaderAndPersist {
     }
     private void saveImg(MacroVariables macroVariables, String macroFileName, MicroVariables microVariables,String microFileName){
         //prepare macro-Img matrix
+        macroVariables = macroVariables.reverseMacroVariable();
+        microVariables = microVariables.reverseMicroVariable();
         int macroWidth = macroVariables.getMacroVariables()[0].length;
         int macroHeight = macroVariables.getMacroVariables().length;
         int[] macroData = new int[macroWidth*macroHeight];

@@ -10,18 +10,25 @@ public class MicroVariables implements Serializable {
     private static final long serialVersionUID = 19920803L;
     private ArrayList<double[][]> microVariables = new ArrayList<>();
     public MicroVariables(){}
+
     public MicroVariables(ArrayList<DoubleMatrix> microVariables){
-        for (int i=0;i<microVariables.size();i++){
-            this.microVariables.add(microVariables.get(i).mul(-1).add(1).toArray2());
+        for (DoubleMatrix microVariable : microVariables) {
+            this.microVariables.add(microVariable.toArray2());
         }
     }
 
-
-    public void setMacroVariables(ArrayList<double[][]> microDensity) {
+    public void setMicroVariables(ArrayList<double[][]> microDensity) {
         this.microVariables = microDensity;
     }
 
     public ArrayList<double[][]> getMicroVariables(){
-        return (ArrayList<double[][]>) microVariables;
+        return microVariables;
+    }
+
+    public MicroVariables reverseMicroVariable(){
+        for(int i = 0;i<microVariables.size();i++){
+            microVariables.set(i,new DoubleMatrix(microVariables.get(i)).mul(-1).add(1).toArray2());
+        }
+        return this;
     }
 }

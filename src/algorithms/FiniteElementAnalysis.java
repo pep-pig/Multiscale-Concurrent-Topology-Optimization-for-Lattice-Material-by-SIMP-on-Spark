@@ -3,6 +3,7 @@ package algorithms;
 import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.jblas.DoubleMatrix;
 import org.jblas.Solve;
+import postprocess.MacroVariables;
 import scala.Tuple3;
 
 import java.util.ArrayList;
@@ -166,7 +167,27 @@ public  class FiniteElementAnalysis {
         for(int i = 0; i < nely*nelx; i++) {
             materialMatrixC.add(new DoubleMatrix(ce.toArray2()));
         }
-        return new Tuple3<ArrayList<DoubleMatrix>, DoubleMatrix, ArrayList<DoubleMatrix>>(materialMatrixC,macroDensity,microDensity);
+        return new Tuple3<>(materialMatrixC, macroDensity, microDensity);
     }
+
+    public Tuple3<ArrayList<DoubleMatrix>,DoubleMatrix, ArrayList<DoubleMatrix>> restoreVariable(double[][] latestMacroDensity,ArrayList<double[][]> latestMicroDensity){
+        double elx = cellModel.length/cellModel.nelx;
+        double ely = cellModel.height/cellModel.nely;
+        DoubleMatrix macroDensity = new DoubleMatrix(latestMacroDensity);
+        ArrayList<DoubleMatrix> microDensity = new ArrayList<DoubleMatrix>();
+        ArrayList<DoubleMatrix> materialMatrixC = new ArrayList<DoubleMatrix>();
+
+        for (double[][] density:latestMicroDensity){
+            microDensity.add(new DoubleMatrix(density));
+        }
+
+        for(int i = 0; i < nely*nelx; i++) {
+            DoubleMatrix ce = Homogenization.homogenize(elx,ely,microDensity.get(i).mul(cellModel.lambda),microDensity.get(i).mul(cellModel.mu)).div(macroDensity.get(i));
+            materialMatrixC.add(new DoubleMatrix(ce.toArray2()));
+        }
+        return new Tuple3<>(materialMatrixC, macroDensity, microDensity);
+    }
+
+
 }
 
